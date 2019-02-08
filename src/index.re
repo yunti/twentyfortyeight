@@ -21,7 +21,7 @@ let setup = env => {
 let draw = (state, env) => {
   Draw.background(Utils.color(~r=199, ~g=217, ~b=229, ~a=255), env);
   Draw.fill(backgroundColor, env);
-  let puzzleSizePx = (blockSize + padding) * puzzleSize;
+  let puzzleSizePx = (blockSize + padding) * puzzleSize - padding;
   let xOffset = (Env.width(env) - puzzleSizePx) / 2;
   let yOffset = (Env.height(env) - puzzleSizePx) / 2;
   Draw.stroke(backgroundColor, env);
