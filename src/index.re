@@ -107,7 +107,7 @@ let movePieces = state =>
     state,
   );
 
-let superMegaRotationStuff = grid => {
+let rotateGridRight = grid => {
   let newGrid = Array.make_matrix(puzzleSize, puzzleSize, 0);
   for (y in 0 to puzzleSize - 1) {
     for (x in 0 to puzzleSize - 1) {
@@ -147,7 +147,7 @@ let draw = ({grid, font, fontSmall} as state, env) => {
     };
   let newGrid =
     if (Env.keyPressed(A, env)) {
-      superMegaRotationStuff(newGrid);
+      rotateGridRight(newGrid);
     } else {
       newGrid;
     };
@@ -160,33 +160,33 @@ let draw = ({grid, font, fontSmall} as state, env) => {
   let newGrid =
     if (Env.keyPressed(Up, env)) {
       newGrid
-      |> superMegaRotationStuff
+      |> rotateGridRight
       |> movePieces
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff;
+      |> rotateGridRight
+      |> rotateGridRight
+      |> rotateGridRight;
     } else {
       newGrid;
     };
   let newGrid =
     if (Env.keyPressed(Left, env)) {
       newGrid
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff
+      |> rotateGridRight
+      |> rotateGridRight
       |> movePieces
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff;
+      |> rotateGridRight
+      |> rotateGridRight;
     } else {
       newGrid;
     };
   let newGrid =
     if (Env.keyPressed(Down, env)) {
       newGrid
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff
-      |> superMegaRotationStuff
+      |> rotateGridRight
+      |> rotateGridRight
+      |> rotateGridRight
       |> movePieces
-      |> superMegaRotationStuff;
+      |> rotateGridRight;
     } else {
       newGrid;
     };
