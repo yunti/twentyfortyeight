@@ -194,7 +194,7 @@ let draw = ({grid, font, fontSmall} as state, env) => {
     (y, row) =>
       Array.iteri(
         (x, n) => {
-          Draw.fill(Utils.color(~r=203, ~g=193, ~b=181, ~a=255), env);
+          Draw.fill(allColors[n], env);
           Draw.stroke(allColors[n], env);
           Draw.strokeWeight(5, env);
           Draw.rect(
