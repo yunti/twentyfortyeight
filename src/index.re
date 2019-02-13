@@ -15,17 +15,28 @@ let allColors = [|
   Utils.color(~r=235, ~g=225, ~b=203, ~a=255),
   Utils.color(~r=232, ~g=180, ~b=130, ~a=255),
   Utils.color(~r=227, ~g=153, ~b=103, ~a=255),
-  Utils.color(~r=223, ~g=119, ~b=101, ~a=255),
+  Utils.color(~r=223, ~g=129, ~b=101, ~a=255),
+  Utils.color(~r=246, ~g=94, ~b=59, ~a=255),
+  Utils.color(~r=237, ~g=207, ~b=114, ~a=255),
+  Utils.color(~r=237, ~g=204, ~b=97, ~a=255),
+  Utils.color(~r=237, ~g=200, ~b=80, ~a=255),
+  Utils.color(~r=237, ~g=197, ~b=63, ~a=255),
+  Utils.color(~r=237, ~g=194, ~b=46, ~a=255),
+  Utils.color(~r=60, ~g=58, ~b=50, ~a=255),
 |];
 
-type stateT = array(array(int));
+type stateT = {
+  grid: array(array(int)),
+  font: fontT,
+  fontSmall: fontT,
+};
 
 let clone = arr => Array.map(Array.copy, arr);
 
 let addNewElement = state => {
   let (emptyBlocks, _, _) =
     Array.fold_left(
-      ((emptyBlocks, x, y), row) =>
+      ((emptyBlocks, _, y), row) =>
         Array.fold_left(
           ((emptyBlocks, x, y), value) => {
             print_endline(Printf.sprintf("> (%d, %d)\n", x, y));
@@ -43,12 +54,11 @@ let addNewElement = state => {
     );
   if (List.length(emptyBlocks) === 0) {
     failwith("This should not happen");
-  } else {
-    let (x, y) = List.nth(emptyBlocks, Random.int(List.length(emptyBlocks)));
-    let newState = clone(state);
-    newState[y][x] = Random.int(10) === 1 ? 2 : 1;
-    newState;
   };
+  let (x, y) = List.nth(emptyBlocks, Random.int(List.length(emptyBlocks)));
+  let newState = clone(state);
+  newState[y][x] = Random.int(10) === 1 ? 2 : 1;
+  newState;
 };
 
 let groupBy2 = row => {
@@ -97,12 +107,26 @@ let movePieces = state =>
     state,
   );
 
-let setup = env => {
-  Env.size(~width=600, ~height=600, env);
-  Array.make_matrix(puzzleSize, puzzleSize, 0);
+let superMegaRotationStuff = grid => {
+  let newGrid = Array.make_matrix(puzzleSize, puzzleSize, 0);
+  for (y in 0 to puzzleSize - 1) {
+    for (x in 0 to puzzleSize - 1) {
+      newGrid[y][x] = grid[puzzleSize - 1 - x][y];
+    };
+  };
+  newGrid;
 };
 
-let draw = (state, env) => {
+let setup = env => {
+  Env.size(~width=600, ~height=600, env);
+  {
+    grid: Array.make_matrix(puzzleSize, puzzleSize, 0),
+    font: Draw.loadFont(~filename="assets/font.fnt", env),
+    fontSmall: Draw.loadFont(~filename="assets/fontSmall.fnt", env),
+  };
+};
+
+let draw = ({grid, font, fontSmall} as state, env) => {
   Draw.background(Utils.color(~r=199, ~g=217, ~b=229, ~a=255), env);
   Draw.fill(backgroundColor, env);
   let puzzleSizePx = (blockSize + padding) * puzzleSize - padding;
@@ -115,11 +139,56 @@ let draw = (state, env) => {
     ~height=puzzleSizePx + paddingAround * 2,
     env,
   );
-  let newState =
+  let newGrid =
     if (Env.keyPressed(Space, env)) {
-      addNewElement(state);
+      addNewElement(grid);
     } else {
-      state;
+      grid;
+    };
+  let newGrid =
+    if (Env.keyPressed(A, env)) {
+      superMegaRotationStuff(newGrid);
+    } else {
+      newGrid;
+    };
+  let newGrid =
+    if (Env.keyPressed(Right, env)) {
+      movePieces(newGrid);
+    } else {
+      newGrid;
+    };
+  let newGrid =
+    if (Env.keyPressed(Up, env)) {
+      newGrid
+      |> superMegaRotationStuff
+      |> movePieces
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff;
+    } else {
+      newGrid;
+    };
+  let newGrid =
+    if (Env.keyPressed(Left, env)) {
+      newGrid
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff
+      |> movePieces
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff;
+    } else {
+      newGrid;
+    };
+  let newGrid =
+    if (Env.keyPressed(Down, env)) {
+      newGrid
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff
+      |> superMegaRotationStuff
+      |> movePieces
+      |> superMegaRotationStuff;
+    } else {
+      newGrid;
     };
   Array.iteri(
     (y, row) =>
@@ -134,12 +203,49 @@ let draw = (state, env) => {
             ~height=blockSize,
             env,
           );
+          switch (n) {
+          | 0 => ()
+          | 1
+          | 2
+          | 3 =>
+            Draw.text(
+              ~font,
+              ~body=string_of_int(Utils.pow(~base=2, ~exp=n)),
+              ~pos=(
+                xOffset + x * (blockSize + padding) + 28,
+                yOffset + y * (padding + blockSize) + 20,
+              ),
+              env,
+            )
+          | 4
+          | 5
+          | 6 =>
+            Draw.text(
+              ~font,
+              ~body=string_of_int(Utils.pow(~base=2, ~exp=n)),
+              ~pos=(
+                xOffset + x * (blockSize + padding) + 6,
+                yOffset + y * (padding + blockSize) + 20,
+              ),
+              env,
+            )
+          | _ =>
+            Draw.text(
+              ~font,
+              ~body=string_of_int(Utils.pow(~base=2, ~exp=n)),
+              ~pos=(
+                xOffset + x * (blockSize + padding) + 28,
+                yOffset + y * (padding + blockSize) + 36,
+              ),
+              env,
+            )
+          };
         },
         row,
       ),
-    newState,
+    newGrid,
   );
-  newState;
+  {...state, grid: newGrid};
 };
 
 run(~setup, ~draw, ());
