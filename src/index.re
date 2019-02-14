@@ -147,13 +147,13 @@ let draw = ({grid, font, fontSmall} as state, env) => {
     };
   let newGrid =
     if (Env.keyPressed(A, env)) {
-      rotateGridRight(newGrid);
+      newGrid |> rotateGridRight;
     } else {
       newGrid;
     };
   let newGrid =
     if (Env.keyPressed(Right, env)) {
-      movePieces(newGrid);
+      newGrid |> movePieces |> addNewElement;
     } else {
       newGrid;
     };
@@ -164,7 +164,8 @@ let draw = ({grid, font, fontSmall} as state, env) => {
       |> movePieces
       |> rotateGridRight
       |> rotateGridRight
-      |> rotateGridRight;
+      |> rotateGridRight
+      |> addNewElement;
     } else {
       newGrid;
     };
@@ -175,7 +176,8 @@ let draw = ({grid, font, fontSmall} as state, env) => {
       |> rotateGridRight
       |> movePieces
       |> rotateGridRight
-      |> rotateGridRight;
+      |> rotateGridRight
+      |> addNewElement;
     } else {
       newGrid;
     };
